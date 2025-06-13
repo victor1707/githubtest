@@ -1,0 +1,40 @@
+pipeline{
+    agent any
+    tools{
+        maven 'mymaven'
+      }
+        stage{
+          stage('checkout code')
+          {
+            steps{
+              retry(5)  
+              git 'https://github.com/victor1707/DevOpsCodeMaven.git'
+              sh 'mvn compile'
+                  }
+             }
+          stage('testcode')
+          {
+            steps{
+              script{
+                int maxRetries = 3
+                int retries = 0
+                boolean success = false
+                while ( retries<maxRetries && !success)
+                {
+                    try{
+                    sh 'mvn test'
+                    success = true
+                    }
+                    catch(Exception e){
+                        retries++
+                        sleep(10)
+                    }
+                }
+                if (!success)
+                {
+                    error("all the attempts failed")
+                }
+              }
+             } 
+        }     
+}
